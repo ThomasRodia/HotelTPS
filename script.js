@@ -100,18 +100,13 @@ const createForm = (parentElement) => {
 
 let booker = createForm(document.getElementById("book"));
 
-console.log(booker);
+const dinamico = Object.keys(struttura_albergo);
+let tipiStanze = {"Data": "date"};
+dinamico.forEach(e => tipiStanze[e] = "text");
 
-booker.setLabels({
-  "Data": "date",
-  "Single": "text",
-  "Double": "text",
-  "Suite": "text",
-});
+booker.setLabels(tipiStanze);
 
-booker.onsubmit((values) => {
-  
-  
+booker.onsubmit((values) => {  
 
 });
 
