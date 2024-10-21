@@ -6,29 +6,6 @@ const struttura_albergo = {
 
 let informazioni = {};
 
-const createTable = (parentElement) => {
-  let data;
-  return {
-    build: (dataInput) => {
-      data = dataInput;
-    },
-    rendert: () => {
-      let htmlTable = "<table>";
-      htmlTable += data.map((row) =>
-        "<tr>" + row.map((col) =>
-          "<td>" + col + "</td>"
-        ).join("")
-      ).join("") + "</tr>";
-      htmlTable += "</table";
-      parentElement.innerHTML = htmlTable;
-    }
-  }
-}
-
-const table1 = createTable(document.getElementById('tabella'));
-const response = document.getElementById("response");
-
-
 function controllaCamere(dati) {
   let key = Object.keys(struttura_albergo);
   let info = dati.split(",");
@@ -39,7 +16,7 @@ function controllaCamere(dati) {
       informazioni[info[0]][key[2]] > info[3]) {
       informazioni[info[0]][key[1]] -= info[1];
       informazioni[info[0]][key[2]] -= info[2];
-      informazioni[info[0]][key[3]] -= info[3];// fare chiamata 
+      informazioni[info[0]][key[3]] -= info[3];
     } else {
       console.log("Impossibile effettuare prenotazione")
     }
@@ -68,48 +45,20 @@ function render() {
   table1.rendert();
 }
 
-const createForm = (parentElement) => {
-  let data;
-  let callback = null;
-
-  return {
-    setLabels: (labelsAndType) => {
-      data = labelsAndType;
-    },
-    onsubmit: (callbackInput) => {
-      callback = callbackInput
-    },
-    render: () => {
-      for (let key in data) {
-        parentElement.innerHTML += `<div>${key}\n<input id="${key}" type="${data[key]}"/></div>` + '\n';
-      }
-      parentElement.innerHTML += "<button type='button' id='submit'>Submit</button>";
-
-      document.querySelector("#submit").onclick = () => {
-        const result = Object.keys(data).map((name) => {
-          return document.querySelector("#" + name).value;
-        });
-
-        Object.keys(data).forEach(e => document.querySelector("#" + e).value = "")
-
-        callback(result);
-      }
-    }         
-  }
+const creaBase = () => {
+  let tipiStanze = {"Data": "date"};
+  Object.keys(struttura_albergo).forEach(e => tipiStanze[e] = "text");
+  return tipiStanze;
 }
 
-let booker = createForm(document.getElementById("book"));
+const table1 = createTable(document.getElementById('tabella'));
+const response = document.getElementById("response");
+const booker = createForm(document.getElementById("book"));
 
-const dinamico = Object.keys(struttura_albergo);
-let tipiStanze = {"Data": "date"};
-dinamico.forEach(e => tipiStanze[e] = "text");
+table1.build([Object.keys(creaBase)])
+table1.render();
 
-booker.setLabels(tipiStanze);
-
-booker.onsubmit((values) => {  
-
-});
-
-booker.render();
-
+booker.onsubmit((values) => {});
+booker.setLabels(creaBase());
+booker.render(); 
 
