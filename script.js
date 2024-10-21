@@ -1,3 +1,6 @@
+const myToken = '4b85f2ba-f4e9-4ad7-8b80-562030ac3c33';
+const myKey = 'tesoro';
+
 const struttura_albergo = {
   singola: 10,
   doppia: 5,
@@ -55,10 +58,49 @@ const table1 = createTable(document.getElementById('tabella'));
 const response = document.getElementById("response");
 const booker = createForm(document.getElementById("book"));
 
-table1.build([Object.keys(creaBase)])
-table1.render();
+booker.onsubmit((values) => {
 
-booker.onsubmit((values) => {});
+});
 booker.setLabels(creaBase());
 booker.render(); 
 
+
+const initTable = () => {
+  return new Promise((resolve) => {
+    let tableStructure = [Object.keys(creaBase())];
+    
+    const getDateKey = (date) => {
+        return `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`;
+    };
+
+    fetch('http://ws.progettimolinari.it/cache/get', {
+        method: "POST",
+        headers: {
+            "content-type": "application/json",
+            "key": myToken
+        },
+        body: JSON.stringify({
+            key: myKey
+        })
+    })
+    .then(r => r.json())
+    .then(r => {
+        const data = JSON.parse(r.result);
+        const dataMonth = {};
+        
+        for (let i = 0; i < 30; i++) {
+            const d = new Date();
+            d.setDate(d.getDate() + i);
+            const key = getDateKey(d);
+            dataMonth[key] = !data[key] ? Object.values(struttura_albergo) : data[key];
+            tableStructure.push([key, ...dataMonth[key]]);
+        }
+        resolve(tableStructure);
+    });
+  });
+}
+
+initTable().then(tableStructure => {
+  table1.build(tableStructure);
+  table1.render();
+});
