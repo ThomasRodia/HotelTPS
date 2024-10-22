@@ -1,5 +1,5 @@
 
-const myToken = '4b85f2ba-f4e9-4ad7-8b80-562030ac3c33';
+const myToken = '51b11384-64a9-4944-9156-ddf968153a6f';
 const myKey = 'tesoro';
 
 const struttura_albergo = {
@@ -107,7 +107,7 @@ const salvaDati = (data, camere) => {
           ...vecchiDati,
           [data]: camere
         };
-        fetch('http://ws.progettimolinari.it/cache/set', {
+        fetch('http://ws.cipiaceinfo.it/cache/set', {
           method: "POST",
           headers: {
             "content-type": "application/json",
@@ -130,7 +130,7 @@ const salvaDati = (data, camere) => {
 
 const prendiDati = (myKey, myToken) => {
   return new Promise((resolve, reject) => {
-    fetch('http://ws.progettimolinari.it/cache/get', {
+    fetch('http://ws.cipiaceinfo.it/cache/get', {
       method: "POST",
       headers: {
         "content-type": "application/json",
