@@ -1,3 +1,4 @@
+
 const myToken = '4b85f2ba-f4e9-4ad7-8b80-562030ac3c33';
 const myKey = 'tesoro';
 
@@ -8,6 +9,14 @@ const struttura_albergo = {
 }
 
 let informazioni = {};
+
+function sottraiArray(arr1, arr2) {
+  return arr1.map((num, index) => num - arr2[index]);
+}
+
+function positivo(arr) {
+  return arr.every(num => num > 0);
+}
 
 function controllaCamere(dati) {
   let key = Object.keys(struttura_albergo);
@@ -49,7 +58,7 @@ function render() {
 }
 
 const creaBase = () => {
-  let tipiStanze = {"Data": "date"};
+  let tipiStanze = { "Data": "date" };
   Object.keys(struttura_albergo).forEach(e => tipiStanze[e] = "text");
   return tipiStanze;
 }
@@ -60,45 +69,84 @@ const booker = createForm(document.getElementById("book"));
 
 booker.onsubmit((values) => {
 
+  let available = Object.values(struttura_albergo);
+
+  // Controlla che nn ci siano gia prenotazioni nella cache
+  prendiDati(myKey, myToken)
+    .then(r => {
+      const data = JSON.parse(r.result);
+      if (data[key]) {
+        available = data[key];
+      }
+      const arrayDiff = sottraiArray(available, values.slice(1));
+      console.log(arrayDiff);
+
+      if (positivo(arrayDiff)) {
+        response.innerHTML = "ok";
+        salvaDati(values[0], arrayDiff).then(() => table1.render());
+      } else {
+        response.innerHTML = "ko";
+      };
+    }),then(() => {
+      table1.render();
+    });
+
 });
-booker.setLabels(creaBase());
-booker.render(); 
 
 
-const initTable = () => {
-  return new Promise((resolve) => {
-    let tableStructure = [Object.keys(creaBase())];
-    
-    const getDateKey = (date) => {
-        return `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`;
-    };
-
-    fetch('http://ws.progettimolinari.it/cache/get', {
-        method: "POST",
-        headers: {
+const salvaDati = (data, camere) => {
+  return new Promise((resolve, reject) => {
+    prendiDati(myKey, myToken)
+      .then(vecchiDati => {
+        const nuoviDati = {
+          ...vecchiDati,
+          [data]: camere
+        };
+        fetch('http://ws.progettimolinari.it/cache/set', {
+          method: "POST",
+          headers: {
             "content-type": "application/json",
             "key": myToken
-        },
-        body: JSON.stringify({
-            key: myKey
+          },
+          body: JSON.stringify({
+            key: myKey,
+            value: JSON.stringify(nuoviDati)
+          })
         })
-    })
-    .then(r => r.json())
-    .then(r => {
-        const data = JSON.parse(r.result);
-        const dataMonth = {};
-        
-        for (let i = 0; i < 30; i++) {
-            const d = new Date();
-            d.setDate(d.getDate() + i);
-            const key = getDateKey(d);
-            dataMonth[key] = !data[key] ? Object.values(struttura_albergo) : data[key];
-            tableStructure.push([key, ...dataMonth[key]]);
-        }
-        resolve(tableStructure);
-    });
+          .then(r => r.json())
+          .then(result => {
+            resolve(result);
+          })
+          .catch(error => reject(error));
+      })
+      .catch(error => reject(error));
   });
 }
+
+const prendiDati = (myKey, myToken) => {
+  return new Promise((resolve, reject) => {
+    fetch('http://ws.progettimolinari.it/cache/get', {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "key": myToken
+      },
+      body: JSON.stringify({
+        key: myKey
+      })
+    })
+      .then(r => r.json())
+      .then(r => {
+        const data = JSON.parse(r.result);
+        resolve(data);
+      })
+      .catch(error => reject(error));
+  });
+}
+
+booker.setLabels(creaBase());
+booker.render();
+
 
 initTable().then(tableStructure => {
   table1.build(tableStructure);
