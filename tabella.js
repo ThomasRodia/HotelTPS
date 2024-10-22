@@ -23,7 +23,7 @@ const initTable = () => {
         let tableStructure = [Object.keys(creaBase())];
         
         const getDateKey = (date) => {
-            return `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`;
+            return date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
         };
 
         prendiDati(myKey, myToken)

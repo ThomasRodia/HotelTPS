@@ -15,7 +15,7 @@ function sottraiArray(arr1, arr2) {
 }
 
 function positivo(arr) {
-  return arr.every(num => num > 0);
+  return arr.every(num => num >= 0);
 }
 
 function controllaCamere(dati) {
@@ -73,8 +73,8 @@ booker.onsubmit((values) => {
 
   // Controlla che nn ci siano gia prenotazioni nella cache
   prendiDati(myKey, myToken)
-    .then(r => {
-      const data = JSON.parse(r.result);
+    .then(data => {
+      const key = values[0];
       if (data[key]) {
         available = data[key];
       }
@@ -83,11 +83,16 @@ booker.onsubmit((values) => {
 
       if (positivo(arrayDiff)) {
         response.innerHTML = "ok";
-        salvaDati(values[0], arrayDiff).then(() => table1.render());
+        salvaDati(values[0], arrayDiff).then(() => {
+          initTable().then(tableStructure => {
+            table1.build(tableStructure);
+            table1.render();
+          });
+        });
       } else {
         response.innerHTML = "ko";
       };
-    }),then(() => {
+    }).then(() => {
       table1.render();
     });
 
